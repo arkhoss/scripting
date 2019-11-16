@@ -1,4 +1,10 @@
 #!/bin/bash
+# Usage: tf-updater.sh <terraform-version>
+# [options] = No options
+# <terraform-version> = desired version of terraform
+# Author: David Caballero <d@dcaballero.net>
+# Version: 1.0
+# Description: This scrip will update your terraform version
 
 # safe pipefail
 set -euo pipefail
