@@ -1,0 +1,1 @@
+namespace.name,limits.cpu_used,limits.cpu_hard,limits.memory_used,limits.memory_hard,persistentvolumeclaims_used,persistentvolumeclaims_hard,pods_used,pods_hard,px_ephemeral_used,px_ephemeral_hard,px_shared_used,px_shared_hard,px_standard_used,px_standard_hard,requests.cpu_used,requests.cpu_hard,requests.memory_used,requests.memory_hard
