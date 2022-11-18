@@ -32,7 +32,7 @@ Options:
 
 from docopt import docopt
 from requests.structures import CaseInsensitiveDict
-import argparse, datetime, re, requests, sys, time
+import datetime, re, requests, sys, time
 
 class Unbuffered(object):
     def __init__(self, stream):
