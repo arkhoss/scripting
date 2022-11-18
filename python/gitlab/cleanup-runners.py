@@ -10,7 +10,7 @@
 # It is capable of handling the GitLab rate-limiting logic, waiting until it is allowed to proceed.
 # Prerequisites:
 #   Python 3.9+
-#   pip3 install argparse datetime requests docopt
+#   pip3 install datetime requests docopt
 # For runner status https://docs.gitlab.com/ee/api/runners.html#list-all-runners
 
 """
