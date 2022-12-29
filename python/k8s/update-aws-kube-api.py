@@ -17,7 +17,7 @@ Usage:
 Options:
   -h --help            Show this screen.
   -v --version         Show version.
-  -p --path=<p>        Kubeconfig file path
+  -p --path=<p>        Kubeconfig file path.
   -r --debug           Debug mode, default false.
   -d --dry-run         Run without perform changes, default false.
 
@@ -103,6 +103,7 @@ def main(arguments):
     home_path = str(Path.home())
     file_path = arguments['--path']
     filename = ''
+    alias = ''
     if debug:
         print("file_path: " + str(file_path) )
     if file_path == None:
@@ -119,20 +120,15 @@ def main(arguments):
 
     contexts = kubeconfig["contexts"]
 
-    alias = ''
-
     for i, context in enumerate(contexts):
-        print("Context" + str(i))
-        #print("Context content" + str(context) )
         alias = context["name"]
         cluster_arn = context["context"]["cluster"]
         if "aws" in cluster_arn:
             print("Updating Alias: " + alias )
             #kube_update(context,alias)
             profile = find_profile(cluster_arn,kubeconfig)
-            print("profile:" + str(profile))
+            print("Profile:" + str(profile))
             update_result = kube_update(context,alias,profile,filename)
-            print("Update: " + str(update_result))
         else:
             print("Not an AWS Cluster... skipped")
 
