@@ -19,13 +19,22 @@ Options:
   -v --version         Show version.
   -p --path=<p>        Kubeconfig file path
   -r --debug           Debug mode, default false.
-  -d --dry-run         Run without remove Runners, default false.
+  -d --dry-run         Run without perform changes, default false.
 
 """
 
 from docopt import docopt
 from pathlib import Path
-import subprocess, os, sys, time, yaml
+import subprocess, datetime, os, sys, time, yaml
+
+def backup_kubeconfig(file_path):
+    """
+    """
+    modified_time = os.path.getmtime(file_path) 
+    time_stamp =  datetime.datetime.fromtimestamp(modified_time).strftime("%b-%d-%y-%H:%M:%S")
+    subprocess.call("cp " + file_path + " " + file_path+"_"+time_stamp ,shell=True)
+    return str(file_path+"_"+time_stamp)
+
 
 def load_yaml(filename):
     """
@@ -41,6 +50,7 @@ def load_yaml(filename):
     except Exception as errors:
         raise errors
 
+
 def kube_update(context,alias,profile,file_path):
     """
     """
@@ -51,7 +61,7 @@ def kube_update(context,alias,profile,file_path):
         print("Updating cluster: " + cluster_name)
         if debug:
             print("update command: aws eks --region " + region + " update-kubeconfig --name "
-                + cluster_name  + " --alias " + alias + " --profile " + profile + " --kubeconfig " + file_path )
+                + cluster_name  + " --alias " + alias + " --profile " + profile + " --kubeconfig " + str(file_path) )
         if dry_run:
             print("Kubeconfig file not updated - dry_run enabled")
         else:
@@ -68,6 +78,7 @@ def kube_update(context,alias,profile,file_path):
         return update_result
     except subprocess.CalledProcessError as errors:
         raise errors
+
 
 def find_profile(cluster_arn, kubeconfig):
     """
@@ -87,9 +98,11 @@ def find_profile(cluster_arn, kubeconfig):
     except Exception as errors:
         raise errors
 
+
 def main(arguments):
     home_path = str(Path.home())
     file_path = arguments['--path']
+    filename = ''
     if debug:
         print("file_path: " + str(file_path) )
     if file_path == None:
@@ -97,7 +110,10 @@ def main(arguments):
     else:
         filename = os.path.join(home_path, file_path)
 
-    #print(load_yaml(filename))
+    if not dry_run:
+        print("Backup kubeconfig file:" + backup_kubeconfig(filename))
+    else:
+        print("Kubeconfig file backup not created - dry_run enabled")
 
     kubeconfig = load_yaml(filename)
 
@@ -115,7 +131,7 @@ def main(arguments):
             #kube_update(context,alias)
             profile = find_profile(cluster_arn,kubeconfig)
             print("profile:" + str(profile))
-            update_result = kube_update(context,alias,profile,file_path)
+            update_result = kube_update(context,alias,profile,filename)
             print("Update: " + str(update_result))
         else:
             print("Not an AWS Cluster... skipped")
