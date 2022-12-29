@@ -125,7 +125,6 @@ def main(arguments):
         cluster_arn = context["context"]["cluster"]
         if "aws" in cluster_arn:
             print("Updating Alias: " + alias )
-            #kube_update(context,alias)
             profile = find_profile(cluster_arn,kubeconfig)
             print("Profile:" + str(profile))
             update_result = kube_update(context,alias,profile,filename)
