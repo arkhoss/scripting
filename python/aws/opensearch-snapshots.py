@@ -38,29 +38,36 @@ from pathlib import Path
 from requests_aws4auth import AWS4Auth
 #import subprocess, datetime, os, sys, time, yaml
 
-
 def register_repo(host, repo_name, bucket_name, region, role_arn, awsauth):
     """
         Register a repository for Opensearch snapshots
     """
     path = '_snapshot/' + repo_name
     url = host + path
-    
-    payload = json.dumps({
+
+    if debug:
+        print(url)
+
+    payload = {
       "type": "s3",
-        "settings": {
-            "bucket": bucket_name,
-            "region":  region,
-            "role_arn":  role_arn
-        }
-    })
+      "settings": {
+          "bucket": bucket_name,
+          "region":  region,
+          "role_arn":  role_arn
+          }
+    }
+
+    if debug:
+        print(payload)
 
     headers = {"Content-Type": "application/json"}
     
-    r = requests.put(url, auth=awsauth, json=payload, headers=headers)
-    
-    print(r.status_code)
-    print(r.text)
+    if dry_run:
+        print("dry run enabled, Register repo command will run if dry run disabled.")
+    else:
+        r = requests.put(url, auth=awsauth, json=payload, headers=headers)
+        print(r.status_code)
+        print(r.text)
 
 
 def take_snapshot(host, repo_name, snapshot_name, awsauth):
@@ -70,10 +77,16 @@ def take_snapshot(host, repo_name, snapshot_name, awsauth):
     
     path = '_snapshot/' + repo_name + '/' + snapshot_name
     url = host + path
-    
-    r = requests.put(url, auth=awsauth)
-    
-    print(r.text)
+
+    if debug:
+        print(url)
+
+
+    if dry_run:
+        print("dry run enabled, take snapshot command will run if dry run disabled.")
+    else:
+        r = requests.put(url, auth=awsauth)
+        print(r.text)
 
 
 def delete_index(host, index_name):
@@ -83,10 +96,15 @@ def delete_index(host, index_name):
     
     path = index_name
     url = host + path
-    
-    r = requests.delete(url, auth=awsauth)
-    
-    print(r.text)
+
+    if debug:
+        print(url)
+
+    if dry_run:
+        print("dry run enabled, delete index command will run if dry run disabled.")
+    else:
+        r = requests.delete(url, auth=awsauth)
+        print(r.text)
     
 
 def restore_snapshot(repo_name, snapshot_name):
@@ -96,17 +114,25 @@ def restore_snapshot(repo_name, snapshot_name):
     
     path = '_snapshot/' + repo_name + '/' + snapshot_name + '/_restore'
     url = host + path
-    
+
+    if debug:
+        print(url)
+
     payload = {
       "indices": "-.kibana*,-.opendistro_security",
       "include_global_state": False
     }
-    
+
+    if debug:
+        print(payload)
+
     headers = {"Content-Type": "application/json"}
-    
-    r = requests.post(url, auth=awsauth, json=payload, headers=headers)
-    
-    print(r.text)
+
+    if dry_run:
+        print("dry run enabled, restore snapshot command will run if dry run disabled.")
+    else:
+        r = requests.post(url, auth=awsauth, json=payload, headers=headers)
+        print(r.text)
 
 
 def restore_snapshot_index(repo_name, snapshot_name, index_name):
@@ -116,14 +142,22 @@ def restore_snapshot_index(repo_name, snapshot_name, index_name):
     
     path = '_snapshot/' + repo_name + '/' + snapshot_name + '/_restore'
     url = host + path
-    
-    payload = json.dumps({"indices": index_name})
-    
+
+    if debug:
+        print(url)
+
+    payload = {"indices": index_name}
+
+    if debug:
+        print(payload)
+
     headers = {"Content-Type": "application/json"}
-    
-    r = requests.post(url, auth=awsauth, json=payload, headers=headers)
-    
-    print(r.text)
+
+    if dry_run:
+        print("dry run enabled, restore snapshot command will run if dry run disabled.")
+    else:
+        r = requests.post(url, auth=awsauth, json=payload, headers=headers)
+        print(r.text)
 
 
 def main(arguments):
@@ -140,14 +174,16 @@ def main(arguments):
         print("Debug mode enabled, no changes will be performed by the script")
     if arguments['register-repo']:
         print("Registering a repository for snaptshots under Opensearch")
-        # add here register repo function
+        register_repo(host, repo_name, bucket_name, region, role_arn, awsauth)
     if arguments['snapshot'] and arguments['new']:
         print("Creating  a new snapshot...")
-        # add here take snapshot
+        take_snapshot(host, repo_name, arguments['--snapshot-name'], awsauth)
     if arguments['restore']:
         print("Restoring all indexes under snapshopt except dashboard and opensearch security")
+        restore_snapshot(repo_name, arguments['--snapshot-name'])
     if arguments['restore-index']:
         print("Resoring specific index under snapshot")
+        restore_snapshot_index(repo_name, arguments['--snapshot-name'], arguments['--index-name'])
 
 
 if __name__ == '__main__':
