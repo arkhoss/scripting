@@ -54,7 +54,7 @@ def register_repo(host, repo_name, bucket_name, region, role_arn, awsauth):
           "bucket": bucket_name,
           "region":  region,
           "role_arn":  role_arn
-          }
+      }
     }
 
     if debug:
