@@ -4,7 +4,7 @@
 # Description: register repo, take snapshots and restore snapshots for opensearch aws
 # Prerequisites:
 #   Python 3.9+
-#   pip3 install docopt boto3 requests requests_aws4auth
+#   pip3 install docopt boto3 requests requests-aws4auth
 
 """
 
@@ -54,7 +54,7 @@ def register_repo(host, repo_name, bucket_name, region, role_arn, awsauth):
           "bucket": bucket_name,
           "region":  region,
           "role_arn":  role_arn
-          }
+      }
     }
 
     if debug:
