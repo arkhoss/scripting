@@ -107,7 +107,7 @@ def delete_index(host, index_name):
         print(r.text)
     
 
-def restore_snapshot(repo_name, snapshot_name):
+def restore_snapshot(host, repo_name, snapshot_name, awsauth):
     """
         Restore snapshot (all indexes except Dashboards and fine-grained access control)
     """
@@ -135,7 +135,7 @@ def restore_snapshot(repo_name, snapshot_name):
         print(r.text)
 
 
-def restore_snapshot_index(repo_name, snapshot_name, index_name):
+def restore_snapshot_index(host, repo_name, snapshot_name, index_name, awsauth):
     """
         Restore snapshot (one index)
     """
@@ -180,10 +180,10 @@ def main(arguments):
         take_snapshot(host, repo_name, arguments['--snapshot-name'], awsauth)
     if arguments['restore']:
         print("Restoring all indexes under snapshopt except dashboard and opensearch security")
-        restore_snapshot(repo_name, arguments['--snapshot-name'])
+        restore_snapshot(host, repo_name, arguments['--snapshot-name'], awsauth)
     if arguments['restore-index']:
         print("Resoring specific index under snapshot")
-        restore_snapshot_index(repo_name, arguments['--snapshot-name'], arguments['--index-name'])
+        restore_snapshot_index(host, repo_name, arguments['--snapshot-name'], arguments['--index-name'], awsauth)
 
 
 if __name__ == '__main__':
