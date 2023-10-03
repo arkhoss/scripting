@@ -1,0 +1,137 @@
+include {
+  path = find_in_parent_folders()
+}
+
+terraform {
+  source = "{{ module_source }}"
+}
+
+locals {
+  common_vars     = read_terragrunt_config(find_in_parent_folders("common.hcl"))
+  record_defaults = local.common_vars.locals.record_defaults
+  alias_defaults  = local.common_vars.locals.alias_defaults
+}
+
+inputs = {
+  zone_name = "{{ zone_name }}"
+  {% if private_zone is defined and private_zone is sameas true %}
+  private_zone = true
+  {% endif %}
+  {% if vpc_id is defined and vpc_id|length %}
+  vpc_id = "{{ vpc_id }}"
+  {% endif %}
+  {% if records|length %}
+
+  records = {
+    {% for key,record in records.items() %}
+      "{{ key }}" = merge(local.record_defaults, {
+        type = "{{ record['type'] }}"
+        prefix = "{{ record['prefix'] }}"
+        ttl = {{ record['ttl']}}
+        {% if record['health_check_id'] | length %}
+        health_check_id = "{{ record['health_check_id'] }}"
+        {% endif %}
+        {% if record['set_identifier'] | length %}
+        set_identifier = "{{ record['set_identifier'] }}"
+        {% endif %}
+        {% if record['routing_weight'] is defined %}
+        weighted_routing_policy = [
+          {
+            weight = {{ record['routing_weight'] }}
+          }
+        ]
+        {% endif %}
+        {% if record['routing_latency_region'] | length %}
+        latency_routing_policy = [
+          {
+            region = "{{ record['routing_latency_region'] }}"
+          }
+        ]
+        {% endif %}
+        {% if record['routing_geolocation'] | length %}
+        geolocation_routing_policy = [
+          {
+            {% for geoattr,geoval in record['routing_geolocation'].items() %}
+              {{ geoattr }} = "{{ geoval }}",
+            {% endfor %}
+          }
+        ]
+        {% endif %}
+        {% if record['routing_failover'] | length %}
+        failover_routing_policy = [
+          {
+            type = "{{ record['routing_failover'] }}"
+          }
+        ]
+        {% endif %}
+        {% if record['multivalue_answer_routing_policy'] is defined and record['multivalue_answer_routing_policy'] is sameas true %}
+          multivalue_answer_routing_policy = true
+        {% endif %}
+        {% if record['values'] | length %}
+        values = [
+          {% for address in record['values'] %}
+          {{ address | tojson }},
+          {% endfor %}
+        ]
+        {% endif %}
+      })
+    {% endfor %}
+  }
+  {% endif %}
+  {% if aliases|length %}
+
+  aliases = {
+    {% for key,alias in aliases.items() %}
+    "{{ key }}" = merge(local.alias_defaults, {
+      type = "{{ alias['type'] }}"
+      prefix = "{{ alias['prefix'] }}"
+      {% if alias['health_check_id'] | length %}
+      health_check_id = "{{ alias['health_check_id'] }}"
+      {% endif %}
+      {% if alias['set_identifier'] | length %}
+      set_identifier = "{{ alias['set_identifier'] }}"
+      {% endif %}
+      {% if alias['routing_weight'] is defined %}
+      weighted_routing_policy = [
+        {
+          weight = {{ alias['routing_weight'] }}
+        }
+      ]
+      {% endif %}
+      {% if alias['routing_latency_region'] | length %}
+      latency_routing_policy = [
+        {
+          region = "{{ alias['routing_latency_region'] }}"
+        }
+      ]
+      {% endif %}
+      {% if alias['routing_geolocation'] | length %}
+      geolocation_routing_policy = [
+        {
+          {% for geoattr,geoval in alias['routing_geolocation'].items() %}
+            {{ geoattr }} = "{{ geoval }}",
+          {% endfor %}
+        }
+      ]
+      {% endif %}
+      {% if alias['routing_failover'] | length %}
+      failover_routing_policy = [
+        {
+          type = "{{ alias['routing_failover'] }}"
+        }
+      ]
+      {% endif %}
+      {% if alias['multivalue_answer_routing_policy'] is defined and alias['multivalue_answer_routing_policy'] is sameas true %}
+        multivalue_answer_routing_policy = true
+      {% endif %}
+      alias = {
+        evaluate_target_health = "{{ alias['evaluate_target_health'] }}"
+        name = "{{ alias['alias_name'] }}"
+        zone_id = "{{ alias['zone_id'] }}"
+      }
+    })
+    {% endfor %}
+  }
+  {% endif %}
+}
+
