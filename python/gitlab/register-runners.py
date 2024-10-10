@@ -15,7 +15,7 @@
 """
 
 Usage:
-  register-runner.py (--url=<u>) (--token=<t>) (--runner-type=<r>) [--group-id=<g>] [--project-id=<p>] [--description=<d>] [--tag-list=<t>] [--debug] [--dry-run]
+  register-runner.py (--url=<u>) (--token=<t>) (--runner-type=<r>) [--group-id=<g>] [--project-id=<p>] [--description=<d>] [--tag-list=<t>] [--run-untagged] [--debug] [--dry-run]
   register-runner.py -h | --help | --version
 
 Options:
@@ -28,6 +28,7 @@ Options:
   -p --project-id=<p>  The ID of the project that the runner is created in. Required if runner_type is project_type.
   -d --description=<d> Description of the runner.
   -t --tag-list=<t>    A list of runner tags.
+  -u --run-untagged    Specifies if the runner should handle untagged jobs.
   -r --debug           Debug mode, default false.
   -d --dry-run         Run without remove Runners, default false.
 
@@ -82,6 +83,8 @@ def register_runner(url, runner_type, group_id: None, project_id: None, tag_list
     if description is not None:
         endpoint = endpoint + f'&description={description}'
 
+    endpoint = endpoint + f'&run_untagged={run_untagged}'
+
     if debug:
       print(f"POST {endpoint}")
     
@@ -125,6 +128,7 @@ if __name__ == '__main__':
     group_id                 = arguments['--group-id']
     project_id               = arguments['--project-id']
     tag_list                 = arguments['--tag-list']
+    run_untagged             = arguments['--run-untagged']
     description              = arguments['--description']
     headers                  = CaseInsensitiveDict()
     headers['Accept']        = 'application/json'
